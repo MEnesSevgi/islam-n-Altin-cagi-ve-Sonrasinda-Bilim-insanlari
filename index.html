@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>İslam&#39;ın Altın Çağı ve Sonrasında Bilim İnsanları</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>İslam'ın Altın Çağı ve Sonrasında Bilim İnsanları</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100vh; width: 100vw;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    #pageHeader {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 8px 16px;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+  z-index: 1000;
+  border-radius: 0 0 6px 6px;
+  width: fit-content;
+  max-width: 90vw;
+  text-align: center;
+}
+    #controls {
+      position: fixed;
+      top: 10px;
+      left: 0;
+      z-index: 1100;
+      background: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+      font-size: 14px;
+      max-height: 80vh;
+      overflow-y: auto;
+      width: 320px;
+      transition: left 0.3s ease, opacity 0.3s ease;
+    }
+    #controls.closed {
+      left: -340px; /* panel genişliği + biraz boşluk */
+      pointer-events: none;
+      opacity: 0;
+    }
+    #toggleControlsBtn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 1200;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      user-select: none;
+      transition: left 0.3s ease;
+    }
+    /* Buton panel açıkken sağa kayar */
+    #controls:not(.closed) + #toggleControlsBtn {
+      left: 125px; /* panel genişliğine yakın */
+    }
+    #map, #wiki {
+      box-sizing: border-box;
+    }
+    #map {
+      height: 50vh;
+      width: 100vw;
+      border-bottom: 2px solid #ccc;
+      transition: width 0.3s ease;
+    }
+    #wiki {
+      height: 50vh;
+      width: 100vw;
+      margin: 0;
+      padding: 0;
+      border: none;
+      display: flex;
+      flex-direction: column;
+    }
+    #wikiTop {
+      border: none;
+      width: 100%;
+      height: 100%;
+      transform: none !important;
+      margin: 0;
+      padding: 0;
+      flex-grow: 1;
+      display: block;
+    }
+    /* Accordion stilleri */
+    .accordion-section {
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 6px;
+    }
+    .accordion-header {
+      background-color: #eee;
+      cursor: pointer;
+      padding: 8px 12px;
+      font-weight: bold;
+      user-select: none;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .accordion-content {
+      max-height: 200px;
+      overflow-y: auto;
+      transition: max-height 0.3s ease;
+      background-color: white;
+      border-top: 1px solid #ccc;
+      padding-left: 24px;
+    }
+    .accordion-content:not(.open) {
+      max-height: 0;
+      overflow: hidden;
+    }
+    .accordion-content.open {
+      max-height: 200px;
+    }
+    .scientist-item {
+      padding: 6px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .scientist-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    /* Zoom butonunu aşağı kaydır */
+    .leaflet-control-zoom {
+      top: auto !important;
+      bottom: -275px !important;
+      left: 10px !important;
+    }
+
+    /* Masaüstü düzenlemeleri */
+    @media (min-width: 768px) {
+      body {
+        flex-direction: row;
+      }
+      #map {
+        height: 100vh;
+        width: calc(100vw - 320px);
+        border-right: 2px solid #ccc;
+        border-bottom: none;
+      }
+      #controls.closed + #toggleControlsBtn {
+        left: 10px;
+      }
+      #controls.closed ~ #map {
+        width: 100vw;
+      }
+      #wiki {
+        height: 100vh;
+        width: calc(100vw - 320px);
+        transition: width 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        padding: 0;
+        border: none;
+      }
+      #controls.closed ~ #wiki {
+        width: 100vw;
+      }
+      #wikiTop {
+        border: none;
+        width: 100%;
+        height: 100%;
+        transform: none !important;
+        margin: 0;
+        padding: 0;
+        flex-grow: 1;
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+<header id="pageHeader">İslam'ın Altın Çağı ve Sonrasında Bilim İnsanları</header>
+  <div id="controls" class="closed">
+    <div class="accordion-section">
+      <label class="accordion-header">
+        <input type="checkbox" id="selectAll" checked />
+        Hepsi (Tüm İşaretçiler)
+      </label>
+    </div>
+    <!-- Yüzyıllar ve bilim insanları buraya JS ile eklenecek -->
+  </div>
+
+  <button id="toggleControlsBtn" aria-label="Katmanları aç/kapa">Katmanlar</button>
+
+  <div id="map"></div>
+
+  <div id="wiki">
+    <iframe id="wikiTop" src="https://tr.wikipedia.org/wiki/İslam%27ın_Altın_Çağı_dönemi_bilim_insanları_listesi" title="Wikipedia" sandbox="allow-same-origin allow-scripts allow-popups"></iframe>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script>
+    const map = L.map('map').setView([35, 45], 3);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Bilim insanları verisi (örnek, tam listeyi ekleyebilirsiniz)
+    const scientistsByCentury = {
+     "8. yüzyıl": [
+        {key:"halilIbnAhmedElFerahidi", name:"Halil ibn Ahmed el-Ferahidi", years:"718–791", fields:"Filoloji", coords:[30.50, 47.82]}, // Basra (Daha Kesin Koordinat)
+        {key:"jabirBinHayyan", name:"Câbir bin Hayyân", years:"721–815", fields:"Kimya, Simya, Astronomi", coords:[32.0, 44.4]}, // Kufa/Bağdat (Yaygın Kabul Gören Çalışma Merkezi)
+        {key:"abdulHamidBinVasi", name:"Abdülhamîd bin Vâsi bin Türk", years:"?–830", fields:"Matematik", coords:[39.6, 66.9]}, // Orta Asya - Buhara/Semerkant (Temsili)
+       {key:"abdulmelikElAsmai", name:"Abdulmelik el-Esmaî", years:"740–828", fields:"Zooloji, Dil bilgisi", coords:[30.50, 47.80], location:"Basra, Irak"},
+        {key:"yakubBinTarik", name:"Yakub bin Tarık", years:"?–796", fields:"Astronomi, Matematik", coords:[33.32, 44.36]}, // Bağdat (Daha Kesin Koordinat)
+        {key:"ibrahimElFezari", name:"İbrahim el-Fezârî", years:"?–777", fields:"Matematik, Astronomi", coords:[33.32, 44.36]}, // Bağdat
+        {key:"muhammedElFezari", name:"Muhammed el-Fezârî", years:"?–806", fields:"Matematik, Astronomi", coords:[33.32, 44.36]}, // Bağdat
+        {key:"ahmedNihavendi", name:"Ahmed Nihâvendî", years:"?", fields:"Astronomi", coords:[34.18, 48.37]}, // Nihavend, İran (Daha Kesin Koordinat)
+        {key:"fadlBinNubaht", name:"Fadl bin Nubaht", years:"?", fields:"Astronomi", coords:[33.32, 44.36]}, // Bağdat
+    ],
+  "9. yüzyıl": [
+       
+        {key:"cahiz", name:"Cahiz", years:"777–869", fields:"Tarih, Biyoloji, Edebiyat", coords:[30.50, 47.82]}, // Basra (Daha Kesin Koordinat)
+        {key:"ibnSad", name:"İbn Sa'd", years:"777–845", fields:"Tarih", coords:[33.32, 44.36]}, // Bağdat (Yaşamının Büyük Kısmı)
+        {key:"harizmi", name:"Hârizmî", years:"780–850", fields:"Astronomi, Coğrafya, Matematik", coords:[41.56, 60.63]}, // Harezm (Uzbekistan/Khiva)
+        {key:"haccacBinYusuf", name:"Hacac bin Yusuf bin Matar", years:"786–833", fields:"Matematik", coords:[33.32, 44.36]}, // Bağdat
+        {key:"ebuSaidGurgani", name:"Ebû Saîd Gürgânî", years:"?–845", fields:"Geometri, Astronomi, Matematik", coords:[36.84, 54.40]}, // Gurgan (Daha Kesin Koordinat)
+        {key:"ebuMasarElBalhi", name:"Ebû Maşer el-Belhî", years:"787–886", fields:"Astronomi, Astroloji", coords:[36.75, 66.89]}, // Belh
+        {key:"ziryab", name:"Ziryâb", years:"789–857", fields:"Şiir, Müzik, Coğrafya, Astronomi, Botanik", coords:[37.88, -4.77]}, // Kurtuba (Córdoba)
+        {key:"zunnunIMisri", name:"Zünnûn-ı Mısrî", years:"796–859", fields:"Simya, Felsefe", coords:[25.68, 32.63]}, // Ekhmim (Doğum Yeri)/Mısır
+       
+        {key:"abbasBinSaid", name:"Abbas bin Saîd Cevherî", years:"800–860", fields:"Astronomi, Matematik, Geometri", coords:[33.32, 44.36]}, // Bağdat
+        {key:"fatimaElFihri", name:"Fâtıma el-Fihrî", years:"800–880", fields:"Akademi, Öğretim", coords:[34.03, -5.00]}, // Fes (Kariyer Merkezi)
+        {key:"kindi", name:"Kindî", years:"801–873", fields:"Felsefe, Matematik, Fizik, Kimya, Farmakoloji, Tıp, Psikoloji, Kozmoloji, Müzik", coords:[33.32, 44.36]}, // Bağdat (Çalışma Merkezi)
+        {key:"ahmedBinMusa", name:"Ahmed bin Musa", years:"803–873", fields:"Astronomi, Geometri, Matematik, Teknoloji", coords:[33.32, 44.36]}, // Bağdat
+        {key:"fergani", name:"Fergânî", years:"805–870", fields:"Astronomi", coords:[40.40, 71.78]}, // Fergana Vadisi
+        {key:"huneynBinIshak", name:"Huneyn bin İshak", years:"809–873", fields:"Tıp, Çeviri, Dil bilgisi, Teoloji", coords:[33.32, 44.36]}, // Bağdat (Beytülhikme)
+        {key:"mahani", name:"Mâhânî", years:"?–880", fields:"Matematik, Astronomi", coords:[37.58, 61.83]}, // Merv
+        {key:"abbasBinFirnas", name:"Abbas ibn Firnâs", years:"810–887", fields:"Astronomi, Mühendislik, Tıp", coords:[37.88, -4.77]}, // Kurtuba (Córdoba)
+        {key:"dineveri", name:"Dîneverî", years:"815–895", fields:"Botanik, Astronomi, Tarih, Matematik, Coğrafya, Metalurji, Ziraat, Kürdoloji", coords:[34.33, 47.60]}, // Dinavar
+        {key:"yakubi", name:"Yakubî", years:"?–897", fields:"Coğrafya, Tarih", coords:[33.32, 44.36]}, // Bağdat (Çalışma Yeri)
+        {key:"belazuri", name:"Belâzürî", years:"820–892", fields:"Tarih", coords:[33.32, 44.36]}, // Bağdat (Çalışma Yeri)
+        {key:"ibnHurdazbih", name:"İbn Hurdâzbih", years:"820–912", fields:"Coğrafya", coords:[33.32, 44.36]}, // Bağdat
+        {key:"ahmedBinYusuf", name:"Ahmed bin Yusuf", years:"835–912", fields:"Matematik", coords:[30.04, 31.23]}, // Kahire (Yaşamının Büyük Kısmı)
+        {key:"sabitBinKurre", name:"Sâbit bin Kurre", years:"836–901", fields:"Matematik, Mekanik, Astronomi, Astroloji", coords:[36.87, 39.04]}, // Harran
+       
+        {key:"ahmedBinSehl", name:"Ahmed bin Sehl el-Belhî", years:"850–934", fields:"Coğrafya, Matematik, Tıp, Psikoloji", coords:[36.75, 66.89]}, // Belh
+        {key:"battani", name:"Battânî", years:"858–929", fields:"Astronomi, Matematik", coords:[36.80, 39.00]}, // Harran (Ana Çalışma Merkezi)
+   
+  ],
+ "10. yüzyıl": [
+        {key:"ibnSina", name:"İbn Sînâ", years:"980–1037", fields:"Tıp, Felsefe, Kimya, Simya, Astronomi, Fizik, Mantık, Kelâm, Şiir", coords:[39.77, 64.44]}, // Buhara (Doğum Yeri)
+        {key:"meryemElIciliyye", name:"Meryem el-İcliyye", years:"?", fields:"Astronomi", coords:[36.20, 36.16]}, // Halep (Çalışma Yeri)
+        {key:"ebuBekirErRazi", name:"Ebû Bekir er-Râzî", years:"865–925", fields:"Tıp, Kimya, Simya, Felsefe, Mantık, Teoloji, Dil bilgisi", coords:[35.60, 51.40]}, // Rey/Tahran (Doğum ve Çalışma Yeri)
+        {key:"farabi", name:"Fârâbî", years:"872–950", fields:"Astronomi, Matematik, Müzik, Felsefe", coords:[42.74, 69.45]}, // Farab (Otrar civarı)
+        {key:"ibnFadlan", name:"İbn Fadlan", years:"877–960", fields:"Coğrafya, Fıkıh", coords:[33.32, 44.36]}, // Bağdat (Çalışma Yeri)
+        {key:"ebuMuhammedElHemdani", name:"Ebu Muhammed el-Hemdani", years:"893–945", fields:"Tarih, Astronomi, Coğrafya, Kimya, Filoloji", coords:[15.35, 44.20]}, // San'a, Yemen
+        {key:"mesudi", name:"Mesûdî", years:"896–956", fields:"Tarih, Coğrafya", coords:[33.32, 44.36]}, // Bağdat (Doğum Yeri)
+        {key:"istahri", name:"İstahrî", years:"?–957", fields:"Coğrafya, Edebiyat", coords:[29.98, 52.88]}, // İstahr, Fars (Daha Kesin Koordinat)
+        {key:"abdurrahmanEsSufi", name:"Abdurrahman es-Sufî", years:"903–986", fields:"Astronomi, Matematik", coords:[32.33, 54.36]}, // İsfahan (Çalışma Yeri, Aslen Reyli)
+        {key:"ibnHavkal", name:"İbn Havkal", years:"?–978", fields:"Coğrafya, Tarih", coords:[33.32, 44.36]}, // Bağdat (Doğum Yeri)
+        
+        {key:"ibnMiskeveyh", name:"İbn Miskeveyh", years:"932–1030", fields:"Tarih, Teoloji, Tıp, Biyoloji, Felsefe", coords:[35.60, 51.40]}, // Rey/Tahran (Çalışma Yeri)
+        {key:"zehravi", name:"Zehrâvî", years:"936–1013", fields:"Tıp, Cerrahi, Kimya", coords:[37.88, -4.77]}, // Kurtuba (Córdoba)/Endülüs
+        {key:"ebuLVefa", name:"Ebu'l-Vefâ el-Bûzcânî", years:"940–998", fields:"Astronomi, Matematik", coords:[33.32, 44.36]}, // Bağdat (Çalışma Yeri, Aslen Buzcanlı)
+        {key:"hucendi", name:"Hucendî", years:"940–1000", fields:"Astronomi, Matematik", coords:[40.28, 69.62]}, // Hucend (Daha Kesin Koordinat)
+        {key:"firdevsi", name:"Firdevsî", years:"940–1020", fields:"Şiir, Edebiyat", coords:[37.00, 59.58]}, // Tus (Doğum Yeri)
+        {key:"ebuMansur", name:"Ebû Mansûr el-Herevî", years:"?", fields:"Tıp", coords:[34.33, 62.20]}, // Herat
+        {key:"siczi", name:"Siczî", years:"945–1020", fields:"Astronomi, Geometri, Matematik", coords:[31.00, 61.50]}, // Sistan (Yaklaşık Konum)
+        {key:"ibnYunus", name:"İbn Yunus", years:"950–1009", fields:"Astronomi, Matematik", coords:[30.04, 31.23]}, // Kahire (Çalışma Yeri)
+        {key:"ibnülFakih", name:"İbnü'l-Fakîh", years:"?", fields:"Tarih, Coğrafya", coords:[34.80, 48.50]}, // Hemedan
+        {key:"keraci", name:"Kerecî", years:"953–1029", fields:"Matematik, Mühendislik, Geometri", coords:[34.80, 48.50]}, // Hemedan (Çalışma Yeri, Aslen Kerecli)
+    ],
+    "11. yüzyıl": [
+        {key:"ebuNasrMansur", name:"İbn Irâk", years:"960–1036", fields:"Matematik, Astronomi", coords:[41.56, 60.63]}, // Harezm (Ürgenç civarı)
+        {key:"ibnulHeysem", name:"İbnü'l-Heysem", years:"965–1040", fields:"Fizik, Optik, Tıp, Astronomi, Felsefe, Teoloji, Matematik", coords:[30.04, 31.23]}, // Kahire (Çalışma Merkezi, Aslen Basralı)
+        {key:"maverdi", name:"Maverdi", years:"972–1058", fields:"Sosyoloji, Siyaset bilimi, Hukuk, Teoloji", coords:[33.32, 44.36]}, // Bağdat (Ana Çalışma Yeri, Aslen Basralı)
+        {key:"biruni", name:"Bîrûnî", years:"973–1048", fields:"Astronomi, Matematik, Fizik, Kimya, Tıp, Felsefe, Antropoloji, Sosyoloji, Jeodezi, Tarih, Teoloji", coords:[40.58, 60.03]}, // Harezm (Doğum Yeri)/Gazne (Çalışma Yeri)
+        {key:"ibnSina", name:"İbn Sînâ", years:"980–1037", fields:"Tıp, Felsefe, Kimya, Simya, Astronomi, Fizik, Mantık, Kelâm, Şiir", coords:[39.77, 64.44]}, // Buhara (Doğum Yeri)
+        {key:"ebuSaidGerdizi", name:"Ebu Said Gerdizî", years:"?–1061", fields:"Coğrafya, Tarih", coords:[33.56, 69.13]}, // Gazne yakınları (Çalışma Merkezi)
+        {key:"ebuHasanBehmenyar", name:"Ebu Hasan Behmenyar", years:"993–1066", fields:"Astronomi, Matematik, Felsefe", coords:[35.60, 51.40]}, // Rey/Tahran
+        {key:"ibnHazm", name:"İbn Hazm", years:"994–1064", fields:"Felsefe, Tarih, Teoloji, Hukuk", coords:[37.38, -5.99]}, // Kurtuba (Córdoba)/İspanya
+        {key:"aliBinRidvan", name:"Ali bin Rıdvan", years:"998–1068", fields:"Fizik, Tıp, Astronomi", coords:[30.04, 31.23]}, // Kahire (Ana Çalışma Yeri)
+        {key:"kasgarliMahmud", name:"Kâşgarlı Mahmud", years:"1005–1102", fields:"Dil, Sözlükbilim, Tarih, Türkoloji", coords:[39.47, 76.08]}, // Kaşgar
+        {key:"nizamulmulk", name:"Nizâmülmülk", years:"1018–1092", fields:"Siyaset bilimi, Hukuk, Felsefe, Edebiyat", coords:[37.00, 59.58]}, // Tus/Nişabur
+        {key:"yusufHasHacib", name:"Yusuf Has Hacib", years:"1019–1077", fields:"Siyaset bilimi, Şiir, Felsefe", coords:[42.74, 75.33]}, // Balasagun (Yaklaşık Konum)
+        {key:"zerkali", name:"Zerkâlî", years:"1029–1100", fields:"Astronomi, Astroloji", coords:[39.86, -4.02]}, // Toledo/İspanya
+        {key:"bekri", name:"Bekrî", years:"1040–1094", fields:"Coğrafya, Tarih", coords:[37.88, -4.77]}, // Kurtuba (Córdoba)/İspanya
+        {key:"omerHayyam", name:"Ömer Hayyam", years:"1048–1131", fields:"Matematik, Astronomi, Felsefe, Şiir, Tarih", coords:[36.21, 58.80]}, // Nişabur
+        {key:"gazzali", name:"Gazzâlî", years:"1058–1111", fields:"Felsefe, Mantık, Fıkıh, Kelâm, Edebiyat, Teoloji, Hukuk, Tasavvuf", coords:[36.21, 58.80]}, // Tus/Nişabur
+        {key:"muhammedZerrindesti", name:"Muhammed Zerrindeşti", years:"?", fields:"Tıp", coords:[34.80, 48.50]}, // Hemedan (Temsili)
+    ],
+  "12. yüzyıl": [
+        {key:"dani", name:"Dânî", years:"1068–1134", fields:"Astronomi, Geometri, Fizik, Müzik", coords:[37.88, -4.77]}, // Kurtuba (Córdoba)
+        {key:"ebulBerekatBagdadi", name:"Ebü'l-Berekât Bağdâdî", years:"1076–1166", fields:"Tıp, Fizik, Felsefe", coords:[33.32, 44.36]}, // Bağdat
+        {key:"hazini", name:"Hazinî", years:"1077–1155", fields:"Fizik, Astronomi, Matematik", coords:[37.58, 61.83]}, // Merv (Çalışma Yeri)
+        {key:"ibnBacce", name:"İbn Bâcce", years:"1085–1138", fields:"Felsefe, Astronomi, Tıp, Fizik, Şiir", coords:[41.65, -0.88]}, // Zaragoza (Daha Kesin Koordinat)
+        {key:"ibnZuhr", name:"İbn Zühr", years:"1094–1162", fields:"Tıp, Cerrahi, Şiir", coords:[37.38, -5.99]}, // Sevilla (Çalışma Yeri)
+        {key:"cabirBinEflah", name:"Câbir bin Eflah", years:"1100–1150", fields:"Astronomi, Matematik", coords:[37.38, -5.99]}, // Sevilla
+        {key:"idrisi", name:"İdrîsî", years:"1100–1165", fields:"Coğrafya, Kartografya", coords:[38.11, 13.35]}, // Palermo, Sicilya (Çalışma Yeri)
+        {key:"ibnAsakir", name:"İbn Asakir", years:"1105–1176", fields:"Tarih", coords:[33.51, 36.27]}, // Şam (Daha Kesin Koordinat)
+        {key:"ibnTufeyl", name:"İbn Tufeyl", years:"1105–1185", fields:"Tıp, Felsefe, Teoloji, Astronomi", coords:[36.72, -5.32]}, // Gırnata (Granada) / Temsili
+        {key:"ibnulCevzi", name:"İbnü'l-Cevzî", years:"1116–1201", fields:"Tarih, Tıp, Teoloji, Fıkıh", coords:[33.32, 44.36]}, // Bağdat
+        {key:"ibnRusd", name:"İbn Rüşd", years:"1126–1198", fields:"Felsefe, Astronomi, Tıp, Matematik, Psikoloji, Teoloji", coords:[37.88, -4.77]}, // Kurtuba (Córdoba)
+        {key:"şerefeddinEtTusi", name:"Şerefeddin et-Tûsî", years:"1135–1213", fields:"Astronomi, Matematik", coords:[36.21, 58.80]}, // Tus/Nişabur
+        {key:"cezari", name:"Cezerî", years:"1136–1206", fields:"Sibernetik, Mühendislik, Makine, Robotik", coords:[37.91, 40.24]}, // Diyarbakır (Cizre'de doğdu, Diyarbakır'da çalıştı)
+        {key:"ibniCubeyr", name:"İbn-i Cübeyr", years:"1145–1217", fields:"Coğrafya, Şiir", coords:[39.47, -0.37]}, // Valensiya
+        {key:"feriduddinAttar", name:"Ferîdüddin Attâr", years:"1145–1221", fields:"Tıp, Farmakoloji, Şiir, Tasavvuf", coords:[36.21, 58.80]}, // Nişabur
+        {key:"ibnŞeddad", name:"İbn-i Şeddad", years:"1145–1234", fields:"Tarih, Hukuk", coords:[36.20, 37.16]}, // Halep (Doğum Yeri)
+        {key:"fahreddinErRazi", name:"Fahreddin er-Râzî", years:"1149–1209", fields:"Fizik, Felsefe, Kelâm, Mantık, Metafizik, Tarih, Hukuk, Astronomi, Teoloji, Edebiyat", coords:[35.60, 51.40]}, // Rey/Tahran
+        {key:"abdullatifElBagdadi", name:"Abdüllatîf el-Bağdâdî", years:"1162–1231", fields:"Tıp, Felsefe", coords:[33.32, 44.36]}, // Bağdat
+        {key:"nureddinBatruci", name:"Nureddin Batrucî", years:"?–1204", fields:"Astronomi", coords:[37.38, -5.99]}, // Sevilla
+    ],
+
+
+ "13. yüzyıl": [
+   {key:"mevlana", name:"Mevlânâ Celâleddîn-i Rûmî", years:"1207–1273", fields:"Felsefe, Tasavvuf, Edebiyat", coords:[37.87, 32.48]}, // Konya (Ana Çalışma Yeri),
+        {key:"necibuddinSemerkandi", name:"Necibüddin Semerkandi", years:"?–1222", fields:"Tıp", coords:[39.65, 66.96]}, // Semerkant
+        {key:"muhyiddinIbnulArabi", name:"Muhyiddin İbnü'l-Arabî", years:"1165–1240", fields:"Felsefe, Tasavvuf, Şiir", coords:[37.98, -1.13]}, // Murcia (Doğum Yeri)/Endülüs
+        {key:"muhammedUfi", name:"Muhammed Ufî", years:"1171–1242", fields:"Tarih, Filoloji", coords:[36.21, 58.80]}, // Nişabur (Horasan) - Temsil
+        {key:"ibnulBaytar", name:"İbnü'l-Baytâr", years:"1197–1248", fields:"Tıp, Farmakoloji, Botanik", coords:[36.72, -5.32]}, // Endülüs/Gırnata (Doğum Yeri)
+        {key:"nasiruddinTusi", name:"Nasîrüddin Tûsî", years:"1201–1274", fields:"Astronomi, Coğrafya, Fizik, Matematik", coords:[37.38, 46.20]}, // Meraga (Rasathane Kurucusu)
+        {key:"ibnEbiUseybia", name:"İbn Ebî Useybia", years:"1203–1270", fields:"Tıp, Tarih", coords:[33.51, 36.27]}, // Şam
+        {key:"zekeriyaElKazvini", name:"Zekeriya el-Kazvinî", years:"1203–1283", fields:"Astronomi, Coğrafya, Fizik, Jeoloji, Matematik", coords:[36.26, 50.00]}, // Kazvin (Doğum Yeri)
+        {key:"ibniLubudi", name:"İbn-i Lubudi", years:"1210–1267", fields:"Tıp, Astronomi, Matematik, Felsefe", coords:[36.20, 37.16]}, // Halep/Şam (Çalışma Yeri)
+        {key:"ibnNefis", name:"İbnü'n-Nefîs", years:"1210–1288", fields:"Tıp, Fizyoloji, Anatomi, Sosyoloji, Biyoloji, Hukuk, Felsefe", coords:[30.04, 31.23]}, // Kahire (Ana Çalışma Yeri, Aslen Şamlı)
+        {key:"esireddinElEbheri", name:"Esireddin el-Ebherî", years:"?–y. 1262", fields:"Matematik, Astronomi, Felsefe", coords:[37.38, 46.20]}, // Meraga (Çalışma Yeri)
+        {key:"semseddinSehrezuri", name:"Şehrezûrî", years:"?–y. 1290", fields:"Tıp, Tarih", coords:[35.50, 45.45]}, // Şehrizor (Kürdistan)
+        {key:"muhyiddinElMagribi", name:"Muhyiddin el-Mağribî", years:"1220–1283", fields:"Astronomi, Astroloji, Matematik", coords:[37.38, 46.20]}, // Meraga (Çalışma Yeri, Aslen Endülüslü)
+        {key:"kutbuddinShirazi", name:"Kutbüddîn Şîrâzî", years:"1236–1311", fields:"Tıp, Matematik, Astronomi, Fizik, Coğrafya, Felsefe", coords:[29.60, 52.54]}, // Şiraz
+        {key:"residuddinHemedani", name:"Reşîdüddîn Fazlullah-ı Hemedânî", years:"1247–1318", fields:"Tarih, Tıp", coords:[34.80, 48.50]}, // Hemedan
+        {key:"semseddinSemerkandi", name:"Şemseddin Semerkandî", years:"1250–1310", fields:"Astronomi, Matematik", coords:[39.65, 66.96]}, // Semerkant
+        {key:"dimeski", name:"Dimeşkî", years:"1256–1327", fields:"Coğrafya, Tarih", coords:[33.51, 36.27]}, // Şam
+        {key:"fahreddinAhlati", name:"Fahreddin Ahlatî", years:"1260–?", fields:"Astronomi", coords:[38.74, 42.48]}, // Ahlat
+    ],
+      
+  "14. yüzyıl": [
+        {key:"ibnTeymiyye", name:"İbn Teymiyye", years:"1263–1328", fields:"Sosyoloji, Fıkıh, Hukuk", coords:[37.36, 39.02]}, // Harran (Doğum Yeri)/Şam (Çalışma Yeri)
+        {key:"kemaleddinElFarisi", name:"Kemâleddin el-Fârisî", years:"1267–1319", fields:"Matematik, Fizik, Optik", coords:[38.08, 46.28]}, // Tebriz (Çalışma Yeri, Aslen Şirazlı)
+        {key:"ebulFida", name:"Ebü'l-Fidâ", years:"1273–1331", fields:"Felsefe, Tarih, Coğrafya", coords:[35.13, 36.75]}, // Hama (Çalışma Yeri)
+        {key:"zehebi", name:"Zehebî", years:"1274–1348", fields:"Tarih, Teoloji, Fıkıh", coords:[33.51, 36.27]}, // Şam
+        {key:"hamdullahElMustevfi", name:"Hamdullah el-Müstevfî", years:"1281–1340", fields:"Coğrafya, Tarih, Şiir", coords:[36.26, 50.00]}, // Kazvin (Doğum Yeri)
+        {key:"ahmedEflaki", name:"Ahmed Eflâkî", years:"y. 1290–1360", fields:"Astronomi", coords:[37.87, 32.48]}, // Konya (Ana Çalışma Yeri)
+        {key:"ibnKesir", name:"İbn Kesir", years:"1301–1373", fields:"Tarih", coords:[33.51, 36.27]}, // Şam (Çalışma Yeri)
+        {key:"ibnBattuta", name:"İbn Battuta", years:"1304–1369", fields:"Coğrafya", coords:[35.77, -5.80]}, // Tanca, Fas (Doğum Yeri)
+        {key:"ibnusŞatir", name:"İbn eş-Şatir", years:"1304–1375", fields:"Astronomi", coords:[33.51, 36.27]}, // Şam (Çalışma Yeri)
+        {key:"semseddinHalili", name:"Şemseddin Halîlî", years:"1320–1380", fields:"Matematik, Astronomi", coords:[33.51, 36.27]}, // Şam (Çalışma Yeri)
+        {key:"ibnHaldun", name:"İbn Haldun", years:"1332–1406", fields:"Felsefe, Tarih, Sosyoloji, Ekonomi, Siyaset bilimi, Demografi", coords:[36.80, 10.18]}, // Tunus (Doğum Yeri)
+        {key:"ahmedi", name:"Ahmedî", years:"1334–1413", fields:"Tıp, Şiir", coords:[39.93, 32.85]}, // Ankara (Yaklaşık Temsil)
+        {key:"aydinliHaciPasa", name:"Aydınlı Hacı Paşa", years:"1339–1413", fields:"Tıp, Teoloji", coords:[37.84, 27.84]}, // Aydın (Doğum Yeri)
+        {key:"kadizadeIRumi", name:"Kadızâde-i Rûmî", years:"1364–1436", fields:"Astronomi, Matematik", coords:[39.65, 66.96]}, // Semerkant (Çalışma Yeri, Aslen Bursalı)
+    ],
+      
+
+    "15. yüzyıl": [
+        {key:"makrizi", name:"Makrîzî", years:"1364–1442", fields:"Tarih", coords:[30.04, 31.23]}, // Kahire (Ana Çalışma Yeri)
+        {key:"cemsidElKasi", name:"Kâşî", years:"1380–1429", fields:"Astronomi, Tıp, Matematik", coords:[39.65, 66.96]}, // Semerkant (Uluğ Bey Rasathanesi)
+        
+        {key:"sabuncuogluSerefeddin", name:"Sabuncuoğlu Şerefeddin", years:"1385–1468", fields:"Tıp, Cerrahi", coords:[40.65, 35.84]}, // Amasya (Daha Kesin Koordinat)
+        {key:"şukrullah", name:"Şükrullâh", years:"1388–1468", fields:"Tarih", coords:[41.01, 28.98]}, // İstanbul (Osmanlı Saray Tarihçisi)
+        {key:"akşemseddin", name:"Akşemseddin", years:"1389–1459", fields:"Tıp, Tasavvuf", coords:[40.43, 30.34]}, // Göynük (Bolu)
+        {key:"ulugBey", name:"Uluğ Bey", years:"1394–1449", fields:"Astronomi, Matematik", coords:[39.65, 66.96]}, // Semerkant (Rasathane Konumu)
+        {key:"aliKuscu", name:"Ali Kuşçu", years:"1403–1474", fields:"Astronomi, Matematik, Dilbilim, Fizik, Felsefe", coords:[41.01, 28.98]}, // İstanbul (Ana Çalışma Merkezi, Aslen Semerkantlı)
+        {key:"ibnTagriberdi", name:"İbn Tağrıberdî", years:"1410–1470", fields:"Tarih, Şiir, Müzik", coords:[30.04, 31.23]}, // Kahire (Ana Çalışma Yeri)
+        {key:"fatihSultanMehmed", name:"Fatih Sultan Mehmed", years:"1432–1481", fields:"Fizik, Mühendislik", coords:[41.018, 28.950]}, // İstanbul, Fatih Camii ve Türbesi
+        {key:"ibnGaziElMiknasi", name:"İbn Gazi el-Miknasi", years:"1437–1513", fields:"Matematik, Hukuk", coords:[33.88, -5.55]}, // Meknes/Fas (Doğum Yeri)
+        {key:"idrisiBitlisi", name:"İdris-i Bitlisî", years:"1457–1520", fields:"Siyaset bilimi, Tarih, Edebiyat", coords:[38.41, 42.06]}, // Bitlis (Doğum Yeri/Temsil)
+        {key:"bircendi", name:"Bircendî", years:"?–y. 1527", fields:"Astronomi, Matematik, Fizik", coords:[32.86, 59.21]}, // Bircend (Daha Kesin Koordinat)
+    ],
+
+ "16. yüzyıl": [
+        {key:"piriReis", name:"Pîrî Reis", years:"1470–1553", fields:"Coğrafya, Kartografya", coords:[40.41, 26.68]}, // Gelibolu (Doğum Yeri)
+        {key:"matrakciNasuh", name:"Matrakçı Nasuh", years:"1480–1564", fields:"Minyatür, Coğrafya, Kartografya, Matematik, Felsefe, Tarih", coords:[41.01, 28.98]}, // İstanbul (Ana Çalışma Yeri)
+        {key:"mimarSinan", name:"Mimar Sinan", years:"y. 1490–1588", fields:"Mimarlık, Mühendislik, Matematik", coords:[41.01, 28.98]}, // İstanbul (Ana Çalışma Yeri)
+        {key:"takiyuddin", name:"Takiyüddin", years:"1526–1585", fields:"Matematik, Astronomi, Mühendislik, Mekanik, Optik", coords:[41.01, 28.98]}, // İstanbul (Tophane Rasathanesi)
+        {key:"şerefHan", name:"Şeref Han", years:"1543–1603", fields:"Siyaset bilimi, Tarih, Şiir, Edebiyat", coords:[38.40, 42.08]}, // Bitlis (Ana Çalışma Yeri)
+        {key:"bahauddinAmili", name:"Bahaüddin Amilî", years:"1547–1621", fields:"Matematik, Mimarlık, Astronomi, Felsefe, Şiir", coords:[32.65, 51.67]}, // İsfahan (Ana Çalışma Yeri)
+{key:"davudiAntaki", name:"Dâvûd-i Antâkî", years:"?–1597", fields:"Tıp, Farmakoloji", coords:[35.92, 36.63]},
+   ],
+     "17. yüzyıl": [
+        {key:"bahauddinAmili", name:"Bahaüddin Amilî", years:"1547–1621", fields:"Matematik, Mimarlık, Astronomi, Felsefe, Şiir", coords:[32.65, 51.67]}, // İsfahan (Ana Çalışma Yeri)
+        {key:"hezarfen", name:"Hezârfen Ahmed Çelebi", years:"y. 1609–1640", fields:"Mühendislik, Astronomi, Tıp, Müzik, Şiir", coords:[41.01, 28.98]}, // İstanbul (Ana Çalışma Yeri)
+        {key:"katipÇelebi", name:"Kâtip Çelebi", years:"1609–1657", fields:"Coğrafya, Kartografya, Tarih, Edebiyat", coords:[41.01, 28.98]}, // İstanbul (Doğum ve Çalışma Yeri)
+        {key:"evliyaÇelebi", name:"Evliya Çelebi", years:"1611–1683", fields:"Coğrafya, Edebiyat (Seyahatname)", coords:[41.01, 28.98]}, // İstanbul (Doğum Yeri)
+        {key:"lagariHasan", name:"Lâgarî Hasan Çelebi", years:"17. yüzyıl", fields:"Mühendislik, Roketçilik, Astronomi", coords:[41.01, 28.98]}, // İstanbul (Eylemin Gerçekleştiği Yer)
+        {key:"tezkireciKoseIbrahim", name:"Tezkireci Köse İbrahim Efendi", years:"17. yüzyıl", fields:"Matematik, Astronomi", coords:[41.01, 28.98]}, // İstanbul (Ana Çalışma Yeri)
+        {key:"ahmediHani", name:"Ahmed-i Hânî", years:"1650–1707", fields:"Astronomi, Şiir, Tarih, Edebiyat, Fıkıh", coords:[39.55, 44.09]} // Doğubayazıt (İshak Paşa Sarayı yakınları)
+      ],
+    };
+
+    const controlsDiv = document.getElementById('controls');
+    const toggleBtn = document.getElementById('toggleControlsBtn');
+
+    // Markerları tutacak dizi
+    let markers = [];
+
+    // Markerları temizle
+    function clearMarkers() {
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+    }
+
+    // Marker ekle
+    function addMarkers(scientists) {
+      clearMarkers();
+
+      const coordMap = new Map();
+
+      scientists.forEach(data => {
+        const key = data.coords.join(',');
+        if (!coordMap.has(key)) {
+          coordMap.set(key, []);
+        }
+        coordMap.get(key).push(data);
+      });
+
+      const radius = 0.0040; // yaklaşık 10 metre
+
+      coordMap.forEach((group, key) => {
+        const baseLat = group[0].coords[0];
+        const baseLng = group[0].coords[1];
+        const count = group.length;
+
+        group.forEach((data, index) => {
+          let newLat, newLng;
+          if (count === 1) {
+            // Tek işaretçi, orijinal konum
+            newLat = baseLat;
+            newLng = baseLng;
+          } else {
+            // Çember üzerinde yerleştir
+            const angle = (2 * Math.PI / count) * index;
+            const latOffset = radius * Math.cos(angle);
+            const lngOffset = radius * Math.sin(angle);
+
+            newLat = baseLat + latOffset;
+            newLng = baseLng + lngOffset;
+          }
+
+          const marker = L.marker([newLat, newLng]).addTo(map);
+          marker.bindPopup(`<b>${data.name}</b><br>${data.fields}<br>${data.years}`);
+          marker.on('click', () => {
+            showWikiPage(data.name);
+          });
+          markers.push(marker);
+        });
+      });
+
+      if(scientists.length > 0) {
+        const avgLat = scientists.reduce((sum, s) => sum + s.coords[0], 0) / scientists.length;
+        const avgLng = scientists.reduce((sum, s) => sum + s.coords[1], 0) / scientists.length;
+        map.setView([avgLat, avgLng], 4);
+      }
+    }
+
+    // Wikipedia iframe güncelle
+    function showWikiPage(name) {
+      const wikiListPage = "İslam'ın_Altın_Çağı_dönemi_bilim_insanları_listesi";
+
+      if(name === 'all') {
+        document.getElementById('wikiTop').src = `https://tr.wikipedia.org/wiki/${wikiListPage}`;
+      } else {
+        let wikiPage = name.replace(/ /g, '_').replace(/\((.*?)\)/g, '').trim();
+        document.getElementById('wikiTop').src = `https://tr.wikipedia.org/wiki/${encodeURIComponent(wikiPage)}`;
+      }
+    }
+
+    // Yüzyıl checkboxları ve içerik oluşturma
+    Object.entries(scientistsByCentury).forEach(([century, scientists]) => {
+      const section = document.createElement('div');
+      section.className = 'accordion-section';
+
+      // Header: checkbox + yüzyıl adı
+      const headerLabel = document.createElement('label');
+      headerLabel.className = 'accordion-header';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'century-checkbox';
+      checkbox.value = century;
+      checkbox.checked = true;
+
+      const span = document.createElement('span');
+      span.textContent = century;
+
+      headerLabel.appendChild(checkbox);
+      headerLabel.appendChild(span);
+
+      section.appendChild(headerLabel);
+
+      // İçerik: bilim insanları listesi
+      const content = document.createElement('div');
+      content.className = 'accordion-content open';
+
+      scientists.forEach(sci => {
+        const item = document.createElement('div');
+        item.className = 'scientist-item';
+        item.textContent = `${sci.name} (${sci.years})`;
+        item.dataset.key = sci.key;
+        content.appendChild(item);
+      });
+
+      section.appendChild(content);
+      controlsDiv.appendChild(section);
+
+      // Accordion aç/kapa (header label değil checkbox'a özel değil)
+      headerLabel.addEventListener('click', e => {
+        if(e.target !== checkbox) {
+          content.classList.toggle('open');
+        }
+      });
+    });
+
+    // Checkbox değiştiğinde seçili yüzyıllara ait markerları göster
+    function updateMarkersBySelectedCenturies() {
+      const checkedCenturies = Array.from(document.querySelectorAll('.century-checkbox:checked')).map(cb => cb.value);
+      const selectedScientists = checkedCenturies.flatMap(c => scientistsByCentury[c] || []);
+      addMarkers(selectedScientists);
+      if(selectedScientists.length === 0) {
+        clearMarkers();
+        map.setView([35, 45], 3);
+      }
+      showWikiPage('all');
+    }
+
+    // Tümünü seç checkbox kontrolü
+    const selectAllCheckbox = document.getElementById('selectAll');
+    selectAllCheckbox.addEventListener('change', () => {
+      const checked = selectAllCheckbox.checked;
+      document.querySelectorAll('.century-checkbox').forEach(cb => cb.checked = checked);
+      updateMarkersBySelectedCenturies();
+    });
+
+    // Yüzyıl checkboxlarına event ekle
+    controlsDiv.addEventListener('change', e => {
+      if(e.target.classList.contains('century-checkbox')) {
+        if(!e.target.checked) {
+          selectAllCheckbox.checked = false;
+        } else {
+          const allChecked = Array.from(document.querySelectorAll('.century-checkbox')).every(cb => cb.checked);
+          selectAllCheckbox.checked = allChecked;
+        }
+        updateMarkersBySelectedCenturies();
+      }
+    });
+
+    // Bilim insanı öğesine tıklanınca sadece o marker gösterilsin ve Wikipedia sayfası açılsın
+    controlsDiv.addEventListener('click', e => {
+      if(e.target.classList.contains('scientist-item')) {
+        const key = e.target.dataset.key;
+        const allScientists = Object.values(scientistsByCentury).flat();
+        const data = allScientists.find(sci => sci.key === key);
+        if(data) {
+          clearMarkers();
+          const marker = L.marker(data.coords).addTo(map);
+          marker.bindPopup(`<b>${data.name}</b><br>${data.fields}<br>${data.years}`).openPopup();
+          markers.push(marker);
+          map.setView(data.coords, 7);
+          showWikiPage(data.name);
+        }
+      }
+    });
+
+    // Katmanlar panelini aç/kapa butonu
+    toggleBtn.addEventListener('click', () => {
+      controlsDiv.classList.toggle('closed');
+    });
+
+    // Başlangıçta tüm yüzyıllar seçili ve markerlar gösterilsin
+    updateMarkersBySelectedCenturies();
+  </script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
